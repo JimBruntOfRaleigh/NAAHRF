@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'package:flutter/services.dart';
+
 import 'package:national_alliance_against_home_repair_fraud/custom_widgets.dart';
 import 'localizations.dart';
 
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
 void main() {
+  //we don't want landscape mode to operate, as it disturbs our layout.
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(const App());
 }
 
@@ -52,7 +59,7 @@ class App extends StatelessWidget {
   }
 }
 
-//TODO don't need this.
+//TODO: Loading dialog, could be useful if interacting with the NAAHRF servers.
 class LoadingDialog extends StatelessWidget {
   static void show(BuildContext context, {Key? key}) => showDialog<void>(
         context: context,
@@ -84,7 +91,6 @@ class LoadingDialog extends StatelessWidget {
   }
 }
 
-//TODO change this to something else.
 class SuccessScreen extends StatelessWidget {
   const SuccessScreen({Key? key}) : super(key: key);
 
@@ -97,18 +103,39 @@ class SuccessScreen extends StatelessWidget {
           children: <Widget>[
             const Icon(Icons.tag_faces, size: 100),
             const SizedBox(height: 10),
-            const Text(
-              'Success',
-              style: TextStyle(fontSize: 54, color: Colors.black),
+            Text(
+              Local.of(context).get('success'),
+              style: const TextStyle(fontSize: 54, color: Colors.black),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(24.0),
+              child: Text(
+                Local.of(context).get('aboutText'),
+                style: const TextStyle(fontSize: 21, color: Colors.black),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              Local.of(context).get('phone'),
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              Local.of(context).get('email'),
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                       builder: (_) => const QuestionAndAnswerForm())),
               icon: const Icon(Icons.replay),
-              label: const Text('AGAIN'),
+              label: Text(Local.of(context).get('again')),
             ),
           ],
         ),
@@ -172,6 +199,7 @@ class QuestionAndAnswerFormBloc extends FormBloc<String, String> {
         questionsBefore.length + questionsDuring.length + questionsAfter.length;
     for (int i = 0; i < numQuestions; i++) {
       _questions.add(SelectFieldBloc(items: ['Yes', 'No']));
+      //TODO: require answers? This enforces the user to read both questions and answers...
       _answers.add(BooleanFieldBloc(validators: [], initialValue: false));
     }
 
@@ -239,8 +267,10 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
   // this variable determines whether the back-to-top button is shown or not
   bool _showBackToTopButton = false;
 
-  // scroll controller
   late ScrollController _scrollController;
+
+  //container for step we're displaying
+  late GlobalKey containerKey;
 
   @override
   void initState() {
@@ -253,6 +283,7 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
             _showBackToTopButton = false; // hide the back-to-top button
           }
         });
+        //print(_scrollController.offset);
       });
 
     super.initState();
@@ -270,7 +301,6 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
         duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
   }
 
-  
   @override
   Widget build(BuildContext context) {
     //size of the screen
@@ -326,44 +356,30 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
                       onFailure: (context, state) {
                         LoadingDialog.hide(context);
                       },
-                      child: SizedBox(
-                        height: size.height,
-                        width: size.width,
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          physics: const ClampingScrollPhysics(),
-                          scrollDirection: Axis.vertical,
-                          child: Container(
-                            //TODO: fix this.
-                            height: 6000,
-                            child: StepperFormBlocBuilder
-                            <QuestionAndAnswerFormBloc>(
-                              formBloc:
-                                  context.read<QuestionAndAnswerFormBloc>(),
-                              type: StepperType.horizontal,
-                              physics: const NeverScrollableScrollPhysics(),
-                              stepsBuilder: (formBloc) {
-                                return [
-                                  _beforeProject(formBloc!),
-                                  _duringProject(formBloc),
-                                  _afterProject(formBloc),
-                                ];
-                              },
-                              onStepContinue: (formBloc) {
-                                formBloc?.submit();
-                                _scrollToTop();
-                              },
-                              onStepCancel: (formBloc){
-                                formBloc?.previousStep();
-                                _scrollToTop();
-                              },
-                              onStepTapped: (formBloc, index){
-                                formBloc?.updateCurrentStep(index);
-                                _scrollToTop();
-                              },
-                            ),
-                          ),
-                        ),
+                      child: StepperScrollerFormBlocBuilder<
+                          QuestionAndAnswerFormBloc>(
+                        formBloc:
+                            context.read<QuestionAndAnswerFormBloc>(),
+                        controller: _scrollController,
+                        stepsBuilder: (formBloc) {
+                          return [
+                            _beforeProject(formBloc!),
+                            _duringProject(formBloc),
+                            _afterProject(formBloc),
+                          ];
+                        },
+                        onStepContinue: (formBloc) {
+                          formBloc?.submit();
+                          _scrollToTop();
+                        },
+                        onStepCancel: (formBloc) {
+                          formBloc?.previousStep();
+                          _scrollToTop();
+                        },
+                        onStepTapped: (formBloc, index) {
+                          formBloc?.updateCurrentStep(index);
+                          _scrollToTop();
+                        },
                       ))),
             ),
           );
@@ -395,6 +411,7 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
                       index % 2 == 0 ? 0.1 : -0.1);
                 })));
   }
+
   FormBlocStep _duringProject(QuestionAndAnswerFormBloc formBloc) {
     return FormBlocStep(
         title: Text(Local.of(context).get('duringProject')),
@@ -420,6 +437,7 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
                       index % 2 == 0 ? -0.1 : 0.1);
                 })));
   }
+
   FormBlocStep _afterProject(QuestionAndAnswerFormBloc formBloc) {
     return FormBlocStep(
         title: Text(Local.of(context).get('afterProject')),
@@ -446,5 +464,16 @@ class _QuestionAndAnswerFormState extends State<QuestionAndAnswerForm> {
                               'A'),
                       index % 2 == 0 ? 0.1 : -0.1);
                 })));
+  }
+}
+
+class StepperLayoutDelegate extends SingleChildLayoutDelegate {
+  StepperLayoutDelegate({required this.height});
+
+  final int height;
+
+  @override
+  bool shouldRelayout(StepperLayoutDelegate oldDelegate) {
+    return oldDelegate.height != height;
   }
 }

@@ -19,6 +19,20 @@ class Local {
       //organization name -- same in every language?
       'orgName': "National Alliance Against Home Repair Fraud",
 
+      //success page
+      'success' : 'Success',
+      'again' : 'Again',
+
+      //about text
+      'aboutText' : 'NAAHRF is a nonprofit organization dedicated to presventing '
+          'home repair fraud and scams by empowering homeowners, small businesses, '
+          'and communities with tools and knowledge to make better decisions when '
+          'hiring a contractor. Since 2009, we have educated over 350,000 homeowners '
+          'and counting!',
+
+      'phone' : '(404) 941-6832',
+      'email' : 'info@naahrf.org',
+
       //menu tabs
       'beforeProject': "Before Project",
       'duringProject': "During Project",
@@ -141,8 +155,23 @@ class Local {
       "Sometimes, a Notice of Completion or Certificate of Occupancy is required. You can contact your local building and zoning department to determine if you need to get these documents from your contractor.",
     },
     'es': {
+      //TODO: finish spanish etc.
       //organization name -- same in every language?
       'orgName': "National Alliance Against Home Repair Fraud",
+
+      //success page
+      'success' : 'Success',
+      'again' : 'Again',
+
+      //about text
+      'aboutText' : 'NAAHRF is a nonprofit organization dedicated to presventing '
+          'home repair fraud and scams by empowering homeowners, small businesses, '
+          'and communities with tools and knowledge to make better decisions when '
+          'hiring a contractor. Since 2009, we have educated over 350,000 homeowners '
+          'and counting!',
+
+      'phone' : '(404) 941-6832',
+      'email' : 'info@naahrf.org',
 
       //menu tabs
       'beforeProject': "Before Project",
@@ -158,7 +187,6 @@ class Local {
       'consultedArchitectQ': '¿Ha consultado con algún arquitecto o ingeniero?',
       'consultedArchitectA':
       'A veces, dependiendo de su proyecto, es posible que deba consultar con especialistas como arquitectos, ingenieros u otros profesionales. Puede ponerse en contacto con su organización local de construcción de viviendas y pedir consejo.',
-      //TODO: finish spanish.
       'gottenThreeEstimatesQ':
       "Have you gotten at least three cost estimates from contractors?",
       'gottenThreeEstimatesA':
